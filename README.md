@@ -53,39 +53,39 @@ Constant Tensor (4x4x128) + Noise ──► StyleConv + AdaIN(W) ──► Upsam
 
 ```
 StyleGAN-FashionMNIST/
-├── models/
-│   ├── __init__.py          # Module exports
-│   ├── mapping.py           # 4-Layer MLP Mapping Network (z -> w)
-│   ├── adain.py             # Adaptive Instance Normalization
-│   ├── blocks.py            # StyleConvBlock & MinibatchStdDev
-│   ├── generator.py         # StyleGenerator Synthesis Network
-│   └── discriminator.py     # Discriminator Network with Batch StdDev
+├── models/                      # Modular Neural Network Architecture
+│   ├── __init__.py              # Export definitions
+│   ├── mapping.py               # 4-Layer MLP Mapping Network (z -> w)
+│   ├── adain.py                 # Adaptive Instance Normalization
+│   ├── blocks.py                # StyleConvBlock & MinibatchStdDev
+│   ├── generator.py             # StyleGenerator Synthesis Network
+│   └── discriminator.py         # Discriminator Network with Batch StdDev
 ├── data/
-│   └── dataset.py           # FashionMNIST transformation & DataLoader pipeline
+│   └── dataset.py               # FashionMNIST transformation & DataLoader pipeline
 ├── utils/
 │   ├── __init__.py
-│   └── visualize.py         # Style mixing matrix & LERP interpolation plots
-├── outputs/
-│   ├── exp9_style_mixing.png
-│   └── exp9_latent_interpolation.png
-├── train.py                 # Main training script (5 epochs adversarial loop)
-├── generate.py              # Inference & figure generation script
+│   └── visualize.py             # Style mixing matrix & LERP interpolation plots (Max 4 images)
+├── outputs/                     # Clean High-Res Output Plots (Max 4 images per cell)
+│   ├── exp9_style_mixing.png         # 2x2 Clean Style Mixing Grid Matrix Output
+│   └── exp9_latent_interpolation.png # 4-Step Latent Space LERP Interpolation Sequence
+├── train.py                     # Main training script (5 epochs adversarial loop)
+├── generate.py                  # Inference & figure generation script
 ├── stylegan_fashion_mnist.ipynb # Complete Jupyter Notebook with code & execution outputs
-├── requirements.txt         # Dependencies
-└── README.md                # Project documentation
+├── requirements.txt             # Dependencies
+└── README.md                    # Project documentation
 ```
 
 ---
 
-## 📊 Experimental Results
+## 📊 Clean Output Visualizations (Max 4 Images Per Plot)
 
-### 1. Style Mixing Grid Matrix Output
-The $5 \times 5$ matrix evaluates style mixing by combining row source styles ($w_A$) with column target styles ($w_B$) at specific synthesis depth steps:
+### 1. Style Mixing Grid Matrix Output ($2 \times 2$)
+Top row displays pure source styles ($w_A$ and $w_B$). Bottom row displays cross-mixed generations at intermediate synthesis scale steps:
 
 ![Style Mixing Grid Matrix Output](outputs/exp9_style_mixing.png)
 
-### 2. Latent Vector LERP Interpolation Sequence
-Linear interpolation ($\alpha \in [0.0, 1.0]$) in intermediate latent space $w$ demonstrates smooth semantic transitions across clothing categories:
+### 2. Latent Vector LERP Interpolation Sequence (4 Steps)
+Linear interpolation ($\alpha = 0.00, 0.33, 0.67, 1.00$) in intermediate latent space $w$ demonstrates smooth semantic transitions:
 
 ![Latent Vector LERP Interpolation Sequence](outputs/exp9_latent_interpolation.png)
 
@@ -108,8 +108,8 @@ Linear interpolation ($\alpha \in [0.0, 1.0]$) in intermediate latent space $w$ 
 ### 1. Installation
 Clone the repository and install requirements:
 ```bash
-git clone https://github.com/your-username/StyleGAN-FashionMNIST.git
-cd StyleGAN-FashionMNIST
+git clone https://github.com/m-eshan/Style-GAN.git
+cd Style-GAN
 pip install -r requirements.txt
 ```
 
@@ -123,12 +123,6 @@ python train.py
 Run inference to generate style mixing grids and interpolation sequences:
 ```bash
 python generate.py --checkpoint checkpoints/netG.pth --out_dir outputs
-```
-
-### 4. Jupyter Notebook
-Open `stylegan_fashion_mnist.ipynb` in Jupyter Notebook, Google Colab, or Kaggle to view inline execution outputs:
-```bash
-jupyter notebook stylegan_fashion_mnist.ipynb
 ```
 
 ---

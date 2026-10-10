@@ -1,53 +1,15 @@
 import os
 import matplotlib
-matplotlib.use('Agg') # Non-interactive backend for server/script figure saving
+matplotlib.use('Agg') # Non-interactive backend for clean server figure rendering
 import matplotlib.pyplot as plt
 import torch
 import numpy as np
 
 def generate_style_mixing_grid(netG, device, latent_dim=128, save_path='outputs/exp9_style_mixing.png'):
     """
-    Generates a 5x5 Style Mixing Grid Matrix Output.
-    """
-    netG.eval()
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    
-    with torch.no_grad():
-        z_source_a = torch.randn(4, latent_dim).to(device) # Source Row Coordinates
-        z_source_b = torch.randn(4, latent_dim).to(device) # Source Column Coordinates
-
-        fig, axes = plt.subplots(5, 5, figsize=(10, 10))
-
-        # Generate Row Source Frames
-        for c in range(4):
-            img_b = netG(z_source_b[c:c+1])
-            img_b = (img_b.cpu().squeeze().permute(1, 2, 0).numpy() + 1) / 2
-            axes[0, c+1].imshow(np.clip(img_b, 0, 1))
-            axes[0, c+1].axis('off')
-
-        # Generate Column Source Frames
-        for r in range(4):
-            img_a = netG(z_source_a[r:r+1])
-            img_a = (img_a.cpu().squeeze().permute(1, 2, 0).numpy() + 1) / 2
-            axes[r+1, 0].imshow(np.clip(img_a, 0, 1))
-            axes[r+1, 0].axis('off')
-
-        # Generate Cross-Mixed Matrices
-        for r in range(4):
-            for c in range(4):
-                mixed_img = netG(z_source_a[r:r+1], style_mixing_step=2, z2=z_source_b[c:c+1])
-                mixed_img = (mixed_img.cpu().squeeze().permute(1, 2, 0).numpy() + 1) / 2
-                axes[r+1, c+1].imshow(np.clip(mixed_img, 0, 1))
-                axes[r+1, c+1].axis('off')
-
-        axes[0, 0].axis('off')
-        plt.suptitle("Style Mixing Grid Matrix Output", y=0.95, fontsize=14)
-        plt.savefig(save_path, bbox_inches='tight')
-        plt.close()
-
-def generate_lerp_interpolation(netG, device, latent_dim=128, steps=8, save_path='outputs/exp9_latent_interpolation.png'):
-    """
-    Generates Latent Vector LERP Interpolation Sequence across 8 steps.
+    Generates a ultra-clean 2x2 Style Mixing Grid (Max 4 images per cell/plot).
+    Top-Left: Source A | Top-Right: Source B
+    Bottom-Left: Mixed (A early + B late) | Bottom-Right: Mixed (B early + A late)
     """
     netG.eval()
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -56,18 +18,63 @@ def generate_lerp_interpolation(netG, device, latent_dim=128, steps=8, save_path
         z1 = torch.randn(1, latent_dim).to(device)
         z2 = torch.randn(1, latent_dim).to(device)
 
-        fig, axes = plt.subplots(1, steps, figsize=(16, 3))
+        # Generate 4 distinct images
+        img_a = netG(z1)
+        img_b = netG(z2)
+        mix1 = netG(z1, style_mixing_step=2, z2=z2)
+        mix2 = netG(z2, style_mixing_step=2, z2=z1)
 
-        for idx, alpha in enumerate(np.linspace(0, 1, steps)):
+        images = [img_a, img_b, mix1, mix2]
+        titles = [
+            "Source Style A (w1)",
+            "Source Style B (w2)",
+            "Mixed: Style A + Style B",
+            "Mixed: Style B + Style A"
+        ]
+
+        fig, axes = plt.subplots(2, 2, figsize=(8, 8), dpi=150)
+        
+        for idx, (img, title) in enumerate(zip(images, titles)):
+            r, c = idx // 2, idx % 2
+            ax = axes[r, c]
+            
+            img_np = (img.cpu().squeeze().permute(1, 2, 0).numpy() + 1) / 2
+            ax.imshow(np.clip(img_np, 0, 1))
+            ax.set_title(title, fontsize=12, fontweight='bold', pad=8)
+            ax.axis('off')
+
+        plt.suptitle("StyleGAN Style Mixing (4 Sample Grid)", y=0.98, fontsize=14, fontweight='bold')
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.savefig(save_path, bbox_inches='tight', dpi=200)
+        plt.close()
+
+def generate_lerp_interpolation(netG, device, latent_dim=128, save_path='outputs/exp9_latent_interpolation.png'):
+    """
+    Generates Latent Vector LERP Interpolation Sequence with exactly 4 clean steps (1x4 grid).
+    """
+    netG.eval()
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    
+    with torch.no_grad():
+        z1 = torch.randn(1, latent_dim).to(device)
+        z2 = torch.randn(1, latent_dim).to(device)
+
+        steps = 4 # Strictly max 4 images per cell/plot
+        alphas = np.linspace(0, 1, steps)
+        
+        fig, axes = plt.subplots(1, steps, figsize=(12, 3.5), dpi=150)
+
+        for idx, alpha in enumerate(alphas):
             # Apply Linear Interpolation calculation sequence (LERP)
             z_interp = (1 - alpha) * z1 + alpha * z2
             interp_img = netG(z_interp)
-            interp_img = (interp_img.cpu().squeeze().permute(1, 2, 0).numpy() + 1) / 2
+            interp_np = (interp_img.cpu().squeeze().permute(1, 2, 0).numpy() + 1) / 2
 
-            axes[idx].imshow(np.clip(interp_img, 0, 1))
-            axes[idx].set_title(f"α = {alpha:.2f}")
+            axes[idx].imshow(np.clip(interp_np, 0, 1))
+            axes[idx].set_title(f"α = {alpha:.2f}", fontsize=12, fontweight='bold', pad=6)
             axes[idx].axis('off')
 
-        plt.suptitle("Latent Vector LERP Interpolation Sequence", y=1.05, fontsize=14)
-        plt.savefig(save_path, bbox_inches='tight')
+        plt.suptitle("Latent Space LERP Interpolation (4 Steps)", y=1.05, fontsize=14, fontweight='bold')
+        plt.tight_layout()
+        plt.savefig(save_path, bbox_inches='tight', dpi=200)
         plt.close()

@@ -91,10 +91,10 @@ def train():
     torch.save(netD.state_dict(), 'checkpoints/netD.pth')
     print("Saved model checkpoints to checkpoints/")
 
-    # Generate Evaluation Outputs
-    print("Generating evaluation figures...")
+    # Generate Evaluation Outputs (Max 4 images per grid)
+    print("Generating evaluation figures (Max 4 images per grid)...")
     generate_style_mixing_grid(netG, device, latent_dim, save_path='outputs/exp9_style_mixing.png')
-    generate_lerp_interpolation(netG, device, latent_dim, steps=8, save_path='outputs/exp9_latent_interpolation.png')
+    generate_lerp_interpolation(netG, device, latent_dim, save_path='outputs/exp9_latent_interpolation.png')
     print("Evaluation completed successfully!")
 
 if __name__ == "__main__":
