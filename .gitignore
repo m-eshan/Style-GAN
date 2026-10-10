@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyTorch Checkpoints & Datasets
+checkpoints/
+data/FashionMNIST/
+*.pth
+*.pt
+
+# Environments & IDEs
+.vscode/
+.idea/
+.venv/
+env/
+venv/
+ENV/
+
+# OS specific
+.DS_Store
+Thumbs.db
